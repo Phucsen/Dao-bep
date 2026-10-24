@@ -49,6 +49,7 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-align: center;
             padding: 12px;
+            cursor: pointer;
         }
         .card:hover {
             transform: translateY(-5px);
@@ -67,6 +68,40 @@
             font-size: 1.1rem;
             color: #555;
         }
+
+        /* Khung phóng to ảnh (Lightbox) */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox img {
+            max-width: 95%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
     </style>
 </head>
 <body>
@@ -78,20 +113,37 @@
 
     <div id="status" class="status">Đang tải hình ảnh...</div>
     <div id="gallery" class="gallery">
-        <!-- Hình ảnh mặc định từ danh sách tệp của cô -->
-        <div class="card">
+        <!-- Hình ảnh mặc định dự phòng -->
+        <div class="card" onclick="openLightbox(this.querySelector('img').src)">
             <img src="1792853134793_2232630042267120089_6012560475146560461_o.jpg" alt="Hình ảnh Dao Bếp 1" onerror="this.parentElement.style.display='none'">
         </div>
     </div>
 
+    <!-- Khung hiển thị ảnh phóng to -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Ảnh phóng to">
+    </div>
+
     <script>
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = src;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+        }
+
         // Tự động lấy toàn bộ ảnh trong kho chứa GitHub (Phucsen/Dao-bep) để hiển thị
         async function loadImagesFromRepo() {
             const statusEl = document.getElementById('status');
             const galleryEl = document.getElementById('gallery');
             try {
                 const response = await fetch('https://api.github.com/repos/Phucsen/Dao-bep/contents/');
-if (!response.ok) throw new Error('Không thể tải danh sách tệp');
+                if (!response.ok) throw new Error('Không thể tải danh sách tệp');
                 const files = await response.json();
                 
                 const imageFiles = files.filter(file => 
@@ -106,9 +158,14 @@ if (!response.ok) throw new Error('Không thể tải danh sách tệp');
                     imageFiles.forEach((file, index) => {
                         const card = document.createElement('div');
                         card.className = 'card';
+                        const imgUrl = file.download_url || file.name;
+                        card.onclick = () => openLightbox(imgUrl);
+
                         const img = document.createElement('img');
-                        img.src = file.name;
+                        img.src = imgUrl;
                         img.alt = 'Ảnh sản phẩm ' + (index + 1);
+                        img.loading = 'lazy';
+
                         card.appendChild(img);
                         galleryEl.appendChild(card);
                     });
