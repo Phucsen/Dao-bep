@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dao Bếp Phúc Sen - Bộ Sưu Tập Hình Ảnh</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+            padding: 12px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+        .status {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.1rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Dao Bếp Phúc Sen</h1>
+        <p>Bộ sưu tập hình ảnh sản phẩm và gian bếp</p>
+    </header>
+
+    <div id="status" class="status">Đang tải hình ảnh...</div>
+    <div id="gallery" class="gallery">
+        <!-- Hình ảnh mặc định từ danh sách tệp của cô -->
+        <div class="card">
+            <img src="1792853134793_2232630042267120089_6012560475146560461_o.jpg" alt="Hình ảnh Dao Bếp 1" onerror="this.parentElement.style.display='none'">
+        </div>
+    </div>
+
+    <script>
+        // Tự động lấy toàn bộ ảnh trong kho chứa GitHub (Phucsen/Dao-bep) để hiển thị
+        async function loadImagesFromRepo() {
+            const statusEl = document.getElementById('status');
+            const galleryEl = document.getElementById('gallery');
+            try {
+                const response = await fetch('https://api.github.com/repos/Phucsen/Dao-bep/contents/');
+if (!response.ok) throw new Error('Không thể tải danh sách tệp');
+                const files = await response.json();
+                
+                const imageFiles = files.filter(file => 
+                    file.type === 'file' && 
+                    (/\.(jpg|jpeg|png|gif|webp)$/i.test(file.name) || /^1792853/.test(file.name)) &&
+                    file.name.toLowerCase() !== 'readme.md' &&
+                    file.name.toLowerCase() !== 'index.html'
+                );
+
+                if (imageFiles.length > 0) {
+                    galleryEl.innerHTML = '';
+                    imageFiles.forEach((file, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        const img = document.createElement('img');
+                        img.src = file.name;
+                        img.alt = 'Ảnh sản phẩm ' + (index + 1);
+                        card.appendChild(img);
+                        galleryEl.appendChild(card);
+                    });
+                    statusEl.style.display = 'none';
+                } else {
+                    statusEl.textContent = 'Chưa tìm thấy tệp hình ảnh nào trong kho chứa.';
+                }
+            } catch (error) {
+                statusEl.style.display = 'none';
+                console.error(error);
+            }
+        }
+
+        loadImagesFromRepo();
+    </script>
+
+</body>
+</html>
